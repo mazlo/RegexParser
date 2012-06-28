@@ -1,11 +1,21 @@
 package com.sharomank.regex.parser;
 
-import com.sharomank.regex.parser.enums.RegexTypes;
-import org.junit.Test;
-
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.Test;
+
+import com.sharomank.regex.parser.types.Alternation;
+import com.sharomank.regex.parser.types.Anchor;
+import com.sharomank.regex.parser.types.CharacterClass;
+import com.sharomank.regex.parser.types.CharacterGroup;
+import com.sharomank.regex.parser.types.Group;
+import com.sharomank.regex.parser.types.NonPrintable;
+import com.sharomank.regex.parser.types.None;
+import com.sharomank.regex.parser.types.Quantifier;
+import com.sharomank.regex.parser.types.QuantifierGroup;
+import com.sharomank.regex.parser.types.RegexPartError;
 
 /**
  * @author Roman Kurbangaliyev
@@ -16,160 +26,173 @@ public class RegexParserTest {
     @Test
     public void simpleGroup() throws Exception {
         String regex = "(test)";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("(", RegexTypes.Group),
-                new RegexPart("t", RegexTypes.None),
-                new RegexPart("e", RegexTypes.None),
-                new RegexPart("s", RegexTypes.None),
-                new RegexPart("t", RegexTypes.None),
-                new RegexPart(")", RegexTypes.Group)
-        );
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new Group( "(" ) );
+		expected.add( new None( "t" ) );
+		expected.add( new None( "e" ) );
+		expected.add( new None( "s" ) );
+		expected.add( new None( "t" ) );
+		expected.add( new Group( ")" ) );
+
         checkParse(regex, expected);
     }
 
     @Test
     public void simpleCharacterGroup() throws Exception {
         String regex = "[test]";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("[test]", RegexTypes.CharacterGroup)
-        );
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new CharacterGroup( "[test]" ) );
+
         checkParse(regex, expected);
     }
 
     @Test
     public void simpleCharacterClass() throws Exception {
         String regex = "\\d\\D\\s\\S\\w\\W.";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("\\d", RegexTypes.CharacterClass),
-                new RegexPart("\\D", RegexTypes.CharacterClass),
-                new RegexPart("\\s", RegexTypes.CharacterClass),
-                new RegexPart("\\S", RegexTypes.CharacterClass),
-                new RegexPart("\\w", RegexTypes.CharacterClass),
-                new RegexPart("\\W", RegexTypes.CharacterClass),
-                new RegexPart(".", RegexTypes.CharacterClass)
-        );
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new CharacterClass( "\\d" ) );
+		expected.add( new CharacterClass( "\\D" ) );
+		expected.add( new CharacterClass( "\\s" ) );
+		expected.add( new CharacterClass( "\\S" ) );
+		expected.add( new CharacterClass( "\\w" ) );
+		expected.add( new CharacterClass( "\\W" ) );
+		expected.add( new CharacterClass( "." ) );
+
         checkParse(regex, expected);
     }
 
     @Test
     public void simpleQuantifier() throws Exception {
         String regex = "a+b?d*";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("a", RegexTypes.None),
-                new RegexPart("+", RegexTypes.Quantifier),
-                new RegexPart("b", RegexTypes.None),
-                new RegexPart("?", RegexTypes.Quantifier),
-                new RegexPart("d", RegexTypes.None),
-                new RegexPart("*", RegexTypes.Quantifier)
-        );
-        checkParse(regex, expected);
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new None( "a" ) );
+		expected.add( new Quantifier( "+" ) );
+		expected.add( new None( "b" ) );
+		expected.add( new Quantifier( "?" ) );
+		expected.add( new None( "d" ) );
+		expected.add( new Quantifier( "*" ) );
+
+		checkParse( regex, expected );
     }
 
     @Test
     public void simpleQuantifierGroup() throws Exception {
         String regex = "a{2}";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("a", RegexTypes.None),
-                new RegexPart("{2}", RegexTypes.QuantifierGroup)
-        );
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new None( "a" ) );
+		expected.add( new QuantifierGroup( "{2}" ) );
+
         checkParse(regex, expected);
     }
 
     @Test
     public void simpleAlternation() throws Exception {
         String regex = "a|b";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("a", RegexTypes.None),
-                new RegexPart("|", RegexTypes.Alternation),
-                new RegexPart("b", RegexTypes.None)
-        );
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new None( "a" ) );
+		expected.add( new Alternation( "|" ) );
+		expected.add( new None( "b" ) );
+
         checkParse(regex, expected);
     }
 
     @Test
     public void simpleBackslash() throws Exception {
         String regex = "\\\\\\\\";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("\\\\", RegexTypes.None),
-                new RegexPart("\\\\", RegexTypes.None)
-        );
-        checkParse(regex, expected);
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new None( "\\\\" ) );
+		expected.add( new None( "\\\\" ) );
+
+		checkParse( regex, expected );
     }
 
     @Test
     public void simpleAnchorWithoutBackslash() throws Exception {
         String regex = "^t$";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("^", RegexTypes.Anchor),
-                new RegexPart("t", RegexTypes.None),
-                new RegexPart("$", RegexTypes.Anchor)
-        );
-        checkParse(regex, expected);
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new Anchor( "^" ) );
+		expected.add( new None( "t" ) );
+		expected.add( new Anchor( "$" ) );
+
+		checkParse( regex, expected );
     }
 
     @Test
     public void simpleAnchorStartAndEnd() throws Exception {
         String regex = "\\At\\Z";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("\\A", RegexTypes.Anchor),
-                new RegexPart("t", RegexTypes.None),
-                new RegexPart("\\Z", RegexTypes.Anchor)
-        );
-        checkParse(regex, expected);
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new Anchor( "\\A" ) );
+		expected.add( new None( "t" ) );
+		expected.add( new Anchor( "\\Z" ) );
+
+		checkParse( regex, expected );
     }
 
     @Test
     public void simpleAnchorStartAndEndLine() throws Exception {
         String regex = "\\At\\z";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("\\A", RegexTypes.Anchor),
-                new RegexPart("t", RegexTypes.None),
-                new RegexPart("\\z", RegexTypes.Anchor)
-        );
-        checkParse(regex, expected);
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new Anchor( "\\A" ) );
+		expected.add( new None( "t" ) );
+		expected.add( new Anchor( "\\z" ) );
+
+		checkParse( regex, expected );
     }
 
     @Test
     public void simpleAnchorOther() throws Exception {
         String regex = "\\G\\b\\B";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("\\G", RegexTypes.Anchor),
-                new RegexPart("\\b", RegexTypes.Anchor),
-                new RegexPart("\\B", RegexTypes.Anchor)
-        );
-        checkParse(regex, expected);
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new Anchor( "\\G" ) );
+		expected.add( new Anchor( "\\b" ) );
+		expected.add( new Anchor( "\\B" ) );
+
+		checkParse( regex, expected );
     }
 
     @Test
     public void simpleNonPrintable() throws Exception {
         String regex = "\\a\\t\\e\\f\\v\\r\\n";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("\\a", RegexTypes.NonPrintable),
-                new RegexPart("\\t", RegexTypes.NonPrintable),
-                new RegexPart("\\e", RegexTypes.NonPrintable),
-                new RegexPart("\\f", RegexTypes.NonPrintable),
-                new RegexPart("\\v", RegexTypes.NonPrintable),
-                new RegexPart("\\r", RegexTypes.NonPrintable),
-                new RegexPart("\\n", RegexTypes.NonPrintable)
-        );
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+
+		expected.add( new NonPrintable( "\\a" ) );
+		expected.add( new NonPrintable( "\\t" ) );
+		expected.add( new NonPrintable( "\\e" ) );
+		expected.add( new NonPrintable( "\\f" ) );
+		expected.add( new NonPrintable( "\\v" ) );
+		expected.add( new NonPrintable( "\\r" ) );
+		expected.add( new NonPrintable( "\\n" ) );
+
         checkParse(regex, expected);
     }
 
     @Test
     public void simpleParseError() throws Exception {
         String regex = "parse|error\\";
-        List<RegexPart> expected = Arrays.asList(
-                new RegexPart("parse|error\\", RegexTypes.ParseError)
-        );
+
+		List<AbstractRegexPart> expected = new ArrayList<AbstractRegexPart>();
+		expected.add( new RegexPartError( "parse|error\\" ) );
+
         checkParse(regex, expected);
     }
 
-    private void checkParse(String regex, List<RegexPart> expected) {
-        List<RegexPart> actual = RegexParser.parse(regex);
+	private void checkParse( String regex, List<AbstractRegexPart> expected ) {
+		List<AbstractRegexPart> actual = RegexParser.parse( regex );
         matchRegexParts(expected, actual);
     }
 
-    private boolean matchRegexParts(List<RegexPart> expected, List<RegexPart> actual) {
+	private boolean matchRegexParts( List<AbstractRegexPart> expected, List<AbstractRegexPart> actual ) {
         if (expected == null || actual == null) {
             throw new IllegalArgumentException("list params cannot be null");
         }
@@ -177,12 +200,12 @@ public class RegexParserTest {
             throw new IllegalStateException("size is different");
         }
 
-        Iterator<RegexPart> expIterator = expected.iterator();
-        Iterator<RegexPart> actIterator = actual.iterator();
+		Iterator<AbstractRegexPart> expIterator = expected.iterator();
+		Iterator<AbstractRegexPart> actIterator = actual.iterator();
 
         while (expIterator.hasNext()) {
-            RegexPart ex = expIterator.next();
-            RegexPart ac = actIterator.next();
+			AbstractRegexPart ex = expIterator.next();
+			AbstractRegexPart ac = actIterator.next();
             if (!ex.equals(ac)) {
                 throw new IllegalStateException("parts is different");
             }

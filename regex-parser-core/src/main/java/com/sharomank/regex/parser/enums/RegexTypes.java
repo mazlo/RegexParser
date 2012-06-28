@@ -16,5 +16,6 @@ public enum RegexTypes {
     Quantifier,
     QuantifierGroup,
     NonPrintable,
-    ParseError
+    ParseError,
+    Unknown
 }

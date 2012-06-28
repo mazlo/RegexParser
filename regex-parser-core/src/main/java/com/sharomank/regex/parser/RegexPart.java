@@ -2,63 +2,15 @@ package com.sharomank.regex.parser;
 
 import com.sharomank.regex.parser.enums.RegexTypes;
 
-import java.text.MessageFormat;
+public class RegexPart extends AbstractRegexPart {
 
-/**
- * Class for store result parsing
- *
- * @author Roman Kurbangaliyev
- * @since 21.05.2012
- */
-public class RegexPart {
-    private final String part;
-    private final RegexTypes type;
+	public RegexPart(String token, RegexTypes type) {
+		super( token, type );
+	}
 
-    public RegexPart(String token, RegexTypes type) {
-        if (token == null || type == null) {
-            throw new IllegalArgumentException();
-        }
+	@Override
+	public String getContent() {
+		return getPart();
+	}
 
-        this.part = token;
-        this.type = type;
-    }
-
-    public String getPart() {
-        return part;
-    }
-
-    public RegexTypes getType() {
-        return type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        RegexPart regexPart = (RegexPart) o;
-        if (!part.equals(regexPart.part)) {
-            return false;
-        } else if (type != regexPart.type) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = part.hashCode();
-        result = 31 * result + type.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return MessageFormat.format("Regex part=''{0}'', type={1}", part, type.name());
-    }
 }

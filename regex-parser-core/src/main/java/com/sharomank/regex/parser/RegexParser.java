@@ -1,13 +1,15 @@
 package com.sharomank.regex.parser;
 
-import com.sharomank.regex.parser.enums.RegexChars;
-import com.sharomank.regex.parser.enums.RegexTypes;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import com.sharomank.regex.parser.enums.RegexChars;
+import com.sharomank.regex.parser.enums.RegexTypes;
+import com.sharomank.regex.parser.types.RegexPartError;
 
 /**
  * Regular expressions parser
@@ -35,16 +37,19 @@ public class RegexParser {
      * Parse regular expression
      *
      * @param regexPattern regular expression
-     * @return list of {@link RegexPart}
+     * @return list of {@link AbstractRegexPart}
      */
-    public static List<RegexPart> parse(String regexPattern) {
+    public static List<AbstractRegexPart> parse(String regexPattern) {
         if (regexPattern == null || regexPattern.trim().length() == 0) {
             return Collections.emptyList();
         } else {
             try {
                 Pattern.compile(regexPattern);
             } catch (PatternSyntaxException e) {
-                return Arrays.asList(new RegexPart(regexPattern, RegexTypes.ParseError));
+				List<AbstractRegexPart> list = new ArrayList<AbstractRegexPart>();
+				list.add( new RegexPartError( regexPattern ) );
+
+				return list;
             }
         }
 

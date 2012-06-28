@@ -1,9 +1,11 @@
 package com.sharomank.regex.parser;
 
-import com.sharomank.regex.parser.enums.RegexTypes;
-
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sharomank.regex.parser.enums.RegexTypes;
+import com.sharomank.regex.parser.types.RegexPartUnkown;
 
 /**
  * Helper class for parse regular expression
@@ -16,11 +18,11 @@ public class ParserHelper {
     private int previousIndex;
     private int currentIndex;
     private RegexTypes currentType;
-    private List<RegexPart> result;
+    private List<AbstractRegexPart> result;
 
     public ParserHelper(String expression) {
         this.expression = expression;
-        this.result = new ArrayList<RegexPart>();
+        this.result = new ArrayList<AbstractRegexPart>();
     }
 
     public String getExpression() {
@@ -39,12 +41,54 @@ public class ParserHelper {
         this.currentType = currentType;
     }
 
-    public List<RegexPart> getResult() {
+    public List<AbstractRegexPart> getResult() {
         return result;
     }
 
-    public void putCurrentRegexPart() {
-        RegexPart part = new RegexPart(getToken(), getCurrentType());
+	public void putCurrentRegexPart() {
+
+		AbstractRegexPart part;
+		Class clazz = null;
+
+		try {
+			clazz = Class.forName( Constants.REGEX_TYPES_PACKAGE_NAME + "." + getCurrentType() );
+		} catch ( ClassNotFoundException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		}
+
+		try {
+			if ( clazz == null )
+				throw new InstantiationException( "Could not instantiate class." );
+
+			part = (AbstractRegexPart) clazz.getDeclaredConstructor( String.class ).newInstance( getToken() );
+		} catch ( InstantiationException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		} catch ( IllegalAccessException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		} catch ( IllegalArgumentException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		} catch ( SecurityException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		} catch ( InvocationTargetException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		} catch ( NoSuchMethodException e ) {
+			part = new RegexPartUnkown( getToken() );
+
+			e.printStackTrace();
+		}
+
         result.add(part);
         setCurrentType(null);
         updatePreviousIndex();
